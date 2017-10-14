@@ -3,8 +3,7 @@ project_name: mantis_bugtracker
 
 MANTIS_DB_VOLUME: "mantisdb"
 MANTIS_VOLUME: "mantisbt"
-
-MANTIS_EXT_PORT: 8080
+MANTIS_LOGS: "mantislogs"
 
 DB_ROOT_PASSWORD: root
 MANTIS_DB_NAME: bugtracker
@@ -21,7 +20,12 @@ letsencrypt_testmode: 'true'
 #create tor hidden service for the tracker
 TOR_HH: False
 
-
 MANTIS_BACKUP_FILE: mantis_file.tar.bz2
 MANTIS_DB_BACKUP_FILE: mantis_db.tar.bz2
 
+admin_email: "admin@mydomain.com"
+webmaster_email: "webmaster@mydomain.com"
+return_path_email: "return@mydomain.com"
+from_email: "from@mydomain.com"
+gmail_username: "whoisdis"
+gmail_password: "azerijazojqofjdiqo"

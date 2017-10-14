@@ -9,6 +9,11 @@
     force: True
     pull: True
 
+- name: "Send gmail_conf file"
+  template:
+    src: gmail_config.j2
+    dest: /tmp/gmail_config
+
 - name: "Start temporary clean mantisbt service to copy files"
   docker_container:
     name: tmp_mantis
@@ -16,6 +21,8 @@
     state: started
     volumes:
       - "{{ MANTIS_VOLUME }}:/mantis_files"
+      - "{{ MANTIS_LOGS }}:/mantis_logs
+
 
 - name: "Start temporary clean maria service to copy files"
   docker_container:
@@ -38,6 +45,12 @@
 
     docker exec tmp_db cp -a /var/lib/mysql/. /mariafiles
   retries: 3
+
+- name: "copy gmail configuration"
+  shell: >
+    docker cp /tmp/gmail_config tmp_mantis/gmail_config;
+    docker exec tmp_mantis bash -c "touch /mantis_logs/mantisbt.log; chmod 777 /mantis_logs/mantisbt.log";
+    docker exec tmp_mantis bash -c "cat /gmail_config >> /mantis_files/config/config_inc.php";
 
 - name: "Stop temporary services"
   docker_container:

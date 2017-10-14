@@ -8,11 +8,16 @@ volumes:
     external: True
   {{ MANTIS_VOLUME }}:
     external: True
+  {{ MANTIS_LOGS }}:
+    external: True
 
 services:
 
   mantisbt:
     image: vimagick/mantisbt:latest
+    volumes:
+      - {{ MANTIS_VOLUME }}:/var/www/html
+      - {{ MANTIS_LOGS }}:/var/log
     environment:
      VIRTUAL_HOST: {{ mantis_domain_name }}
 {% if SSL == True %}
@@ -27,6 +32,8 @@ services:
 
   mysql:
     image: mariadb:latest
+    volumes:
+      - {{ MANTIS_DB_VOLUME }}:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD={{DB_ROOT_PASSWORD}}
       - MYSQL_DATABASE={{MANTIS_DB_NAME}}
