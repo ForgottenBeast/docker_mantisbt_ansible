@@ -16,7 +16,7 @@ SSL: True
 mantis_domain_name: tracker.mysite.xyz
 mantis_ip_addr: '1.2.3.4'
 mantis_letsencrypt_mail: me@mydomain.com
-letsencrypt_testmode: 'True'
+letsencrypt_testmode: 'true'
 
 #create tor hidden service for the tracker
 TOR_HH: False
