@@ -1,0 +1,10 @@
+MANTIS_DB_VOLUME: "mantisdb"
+MANTIS_VOLUME: "mantisbt"
+
+MANTIS_EXT_PORT: 8080
+
+DB_ROOT_PASSWORD: root
+MANTIS_DB_NAME: bugtracker
+DB_ROOT_USER: root
+DB_USER: mantisbt
+DB_PASSWORD: mantisbt

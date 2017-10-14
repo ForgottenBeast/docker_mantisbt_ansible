@@ -1,0 +1,26 @@
+version: "2"
+volumes:
+  {{ MANTIS_DB_VOLUME }}:
+    external: True
+  {{ MANTIS_VOLUME }}:
+    external: True
+
+services:
+
+  mantisbt:
+    image: vimagick/mantisbt:latest
+    ports:
+      - "{{MANTIS_EXT_PORT}}:80"
+    links:
+      - mysql
+    restart: always
+
+  mysql:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD={{DB_ROOT_PASSWORD}}
+      - MYSQL_DATABASE={{MANTIS_DB_NAME}}
+      - MYSQL_ROOT_USER={{DB_ROOT_USER}}
+      - MYSQL_USER={{DB_USER}}
+      - MYSQL_PASSWORD={{DB_PASSWORD}}
+    restart: always
