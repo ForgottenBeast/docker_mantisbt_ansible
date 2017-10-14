@@ -35,28 +35,8 @@ services:
       - MYSQL_PASSWORD={{DB_PASSWORD}}
     restart: always
 
-{% if ADD_NGINX_PROXY %}
-  nginx:
-    image: jwilder/nginx-proxy
-    restart: always
-    ports:
-      - "{{mantis_ip_addr}}:443:443"
-      - "{{mantis_ip_addr}}:80:80"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - "/etc/nginx/vhost.d"
-      - "/usr/share/nginx/html"
-      - "/etc/nginx/certs"
 
-  letsencrypt_nginx_companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: always
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    volumes_from:
-      - "nginx"
-
-{% endif %}
+{% if TOR_HH %}
   torhh:
     restart: always
     image: goldy/tor-hidden-service
@@ -68,4 +48,4 @@ services:
         
       MANTIS_BT_PORTS: {{MANTIS_EXT_PORT}}:80
 
-{% if TOR_HH %}
+{% endif %}

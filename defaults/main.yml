@@ -18,13 +18,9 @@ mantis_ip_addr: '1.2.3.4'
 mantis_letsencrypt_mail: me@mydomain.com
 letsencrypt_testmode: 'True'
 
-ADD_NGINX_PROXY: True
-
 #create tor hidden service for the tracker
 TOR_HH: False
 
-#will this site use cloudflare?
-CLOUDFLARE: False
 
 MANTIS_BACKUP_FILE: mantis_file.tar.bz2
 MANTIS_DB_BACKUP_FILE: mantis_db.tar.bz2
