@@ -1,0 +1,48 @@
+- name: "Copy data from backup folder to remote host"
+  tags:
+    - mantis_restore
+    - mantis_db_restore
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/{{ item }}
+  with_items:
+    - "{{ MANTIS_BACKUP_FILE }}"
+    - "{{ MANTIS_DB_BACKUP_FILE }}"
+
+- name: "Stopping wordpress stack"
+  docker_service:
+    state: absent
+    project_src: /tmp/{{ project_name }}
+
+- name: "restore data from backup to wordpress"
+  tags: mantis_restore
+  shell: |
+    docker run --rm -i -v {{ MANTIS_VOLUME }}:/mantis -v /tmp:/backup:ro \
+        {{ alpine_image }} \
+        sh -c "\
+        apk update;\
+        apk add -y tar;\
+        rm -rf /mantis/* ;\
+        tar -C /mantis/ -xjf /backup/{{ MANTIS_BACKUP_FILE }};"
+
+- name: "restore data from backup to db"
+  tags: mantis_db_restore
+  shell: |
+    docker run --rm -i -v {{ MANTIS_DB_VOLUME }}:/db -v /tmp:/backup:ro \
+        {{ alpine_image }} \
+        sh -c "\
+        apk update;\
+        apk add -y tar;\
+        rm -rf /db/* ;\
+        tar -C /db/ -xjf /backup/{{ MANTIS_DB_BACKUP_FILE }}"
+
+- name: "Remove backup data"
+  tags:
+    - mantis_restore
+    - mantis_db_restore
+  file:
+    name: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - "{{ MANTIS_BACKUP_FILE }}"
+    - "{{ MANTIS_DB_BACKUP_FILE }}"

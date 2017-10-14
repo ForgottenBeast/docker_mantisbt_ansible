@@ -1,0 +1,37 @@
+- name: "Backup mantis data"
+  tags: mantis_backup
+  shell: |
+    docker run --rm -i -v {{ MANTIS_VOLUME }}:/volume:ro -v /tmp:/backup {{ alpine_image }} \
+       tar -cjf /backup/mantis_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2 -C /volume ./
+
+- name: "Backup mantis db"
+  tags: mantis_db_backup
+  shell: |
+    docker run --rm -i -v {{ MANTIS_DB_VOLUME }}:/volume:ro -v /tmp:/backup {{ alpine_image }} \
+       tar -cjf /backup/mantis_db_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2 -C /volume ./
+
+- name: "Retrieve db backup files"
+  tags: mantis_db_backup
+  fetch:
+    flat: True
+    src: /tmp/{{ item }}
+    dest: "{{ playbook_dir }}/{{ item }}"
+  with_items:
+    - "mantis_db_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2"
+
+- name: "Retrieve mantis backup files"
+  tags: mantis_backup
+  fetch:
+    flat: True
+    src: /tmp/{{ item }}
+    dest: "{{ playbook_dir }}/{{ item }}"
+  with_items:
+    - "mantis_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2"
+
+- name: "Clean up backup files"
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - "/tmp/mantis_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2"
+    - "/tmp/mantis_db_backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.tar.bz2"

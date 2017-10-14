@@ -1,0 +1,48 @@
+################################################################
+#If you add files in here remove them at the end of task block!#
+################################################################
+
+- name: "Update local mantisbt clean image"
+  docker_image:
+    name: vimagick/mantisbt:latest
+    state: present
+    force: True
+    pull: True
+
+- name: "Start temporary clean mantisbt service to copy files"
+  docker_container:
+    name: tmp_mantis
+    image: vimagick/mantisbt:latest
+    state: started
+    volumes:
+      - "{{ MANTIS_VOLUME }}:/mantis_files"
+
+- name: "Start temporary clean maria service to copy files"
+  docker_container:
+    name: tmp_db
+    image: mariadb
+    state: started
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ DB_ROOT_PASSWORD }}"
+    volumes:
+      - "{{ MANTIS_DB_VOLUME }}:/maria_files"
+
+- name: "Wait 5 seconds for db to start up"
+  pause:
+    seconds: 5
+
+- name: "Copy clean files to docker volumes"
+  shell: |
+    docker exec tmp_wp bash -c "cp -a /var/www/html/. /mantis_files; \
+            chown www-data:www-data -R /mantis_files "
+
+    docker exec tmp_db cp -a /var/lib/mysql/. /mariafiles
+  retries: 3
+
+- name: "Stop temporary services"
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - tmp_db
+    - tmp_mantis

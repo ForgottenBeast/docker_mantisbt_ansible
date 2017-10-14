@@ -1,0 +1,140 @@
+- include: requirements.yml
+  become: True
+  tags:
+   - mantis_deploy
+   - docker_install
+
+- name: "Test if docker is installed"
+  tags: mantis_deploy
+  become: True
+  command: which docker
+  ignore_errors: True
+  register: docker_present
+
+- name: "Installing docker"
+  include: docker_install.yml
+  become: True
+  tags: mantis_deploy
+  when: docker_present|failed
+
+- include: create_volumes.yml
+  become: True
+  tags:
+    - mantis_volumes_setup
+    - mantis_setup
+
+- include: setup.yml
+  become: True
+  tags: mantis_setup
+
+- include: backup.yml
+  become: True
+  tags: mantis_all_backup
+
+- name: "Create docker-compose folder"
+  tags:
+   - mantis_destroy
+   - mantis_deploy
+   - mantis_restore
+  file:
+    name: /tmp/{{ project_name }}
+    state: directory
+
+- name: "Creating a tor hidden service private key if there is none..."
+  include: gen_rsa.yml
+  when: tor_hidden_service_private_key == None and
+        TOR_HH == True
+
+- name: "Write docker-compose"
+  tags: 
+    - mantis_destroy
+    - mantis_deploy
+    - mantis_restore
+  template:
+    src: docker-compose.j2
+    dest: /tmp/{{ project_name }}/docker-compose.yml
+
+- include: restore.yml
+  become: True
+  tags: mantis_all_restore
+
+- name: "Allow docker containers to communicate with the outside"
+  become: True
+  tags:
+   - mantis_deploy
+   - mantis_restore
+  command: iptables -t nat -A POSTROUTING -s 172.0.0.0/8 ! -d 172.0.0.0/8 -j MASQUERADE
+
+- include: deploy.yml
+  become: True
+  tags:
+    - mantis_deploy
+    - mantis_restore
+
+- include: destroy.yml
+  become: True
+  tags: mantis_destroy
+
+- name: "Remove docker-compose folder"
+  become: True
+  tags:
+    - mantis_deploy
+    - mantis_destroy
+    - mantis_restore
+  file:
+    name: /tmp/{{ project_name }}
+    state: absent
+
+- debug:
+    msg: The deed is done.
+  tags: mantis_destroy
+
+- name: "Checking cert obtention"
+  tags:
+    - firewall
+    - mantis_deploy
+    - mantis_restore
+  become: True
+  command: docker logs {{project_name}}_letsencrypt_nginx_companion_1
+  when: SSL == True and ADD_NGINX_PROXY == True
+  register: cert
+  until: cert.stderr.find("Saving cert.pem") != -1
+  retries: 360
+  delay: 5
+
+- name: "Certs obtained!"
+  tags: firewall
+  pause:
+    prompt: |
+      "You can now enable your site on cloudflare"
+  when: CLOUDFLARE == True
+
+- include: firewall.yml
+  become: True
+  tags: firewall
+  when: CLOUDFLARE == True
+
+- name: "Pause on cloudflare"
+  become: True
+  when: CLOUDFLARE == True
+  tags: mantis_renew
+  pause:
+    prompt: |
+      "Before renewing your certificate, please pause your website on cloudflare so letsencrypt
+      can reach it."
+
+- name: "Checking the dns records"
+  become: True
+  tags: mantis_renew
+  command: nslookup {{ mantis_domain_name }}
+  register: result
+  until: result.stdout.find(mantis_ip_addr) != -1
+  retries: 360
+  delay: 5
+
+- name: "start cert renewal procedure"
+  include: renew.yml
+  when: SSL == True and ADD_NGINX_PROXY == True
+  become: True
+  tags: mantis_renew
+
