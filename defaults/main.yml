@@ -11,9 +11,8 @@ DB_ROOT_USER: root
 DB_USER: mantisbt
 DB_PASSWORD: mantisbt
 
-SSL: True
+SSL: False
 mantis_domain_name: tracker.mysite.xyz
-mantis_ip_addr: '1.2.3.4'
 mantis_letsencrypt_mail: me@mydomain.com
 letsencrypt_testmode: 'true'
 
@@ -29,3 +28,9 @@ return_path_email: "return@mydomain.com"
 from_email: "from@mydomain.com"
 gmail_username: "whoisdis"
 gmail_password: "azerijazojqofjdiqo"
+
+#1024bit rsa key, if left empty one will be generated
+tor_hidden_service_private_key: None
+
+#if none precised, one will be generated
+master_salt: None
