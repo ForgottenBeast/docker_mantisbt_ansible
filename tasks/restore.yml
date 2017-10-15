@@ -9,12 +9,12 @@
     - "{{ MANTIS_BACKUP_FILE }}"
     - "{{ MANTIS_DB_BACKUP_FILE }}"
 
-- name: "Stopping wordpress stack"
+- name: "Stopping mantis stack"
   docker_service:
     state: absent
     project_src: /tmp/{{ project_name }}
 
-- name: "restore data from backup to wordpress"
+- name: "restore data from backup to mantis"
   tags: mantis_restore
   shell: |
     docker run --rm -i -v {{ MANTIS_VOLUME }}:/mantis -v /tmp:/backup:ro \

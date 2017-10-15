@@ -9,10 +9,20 @@
     force: True
     pull: True
 
-- name: "Send gmail_conf file"
+- name: "Generate master salt"
+  command: bash -c "date | md5sum | awk '{ print $1 }'"
+  register: gen_master_salt
+  when: master_salt == 'None'
+
+- name: 'Set master_salt'
+  when: master_salt == 'None'
+  set_fact:
+    master_salt: '{{gen_master_salt.stdout}}'
+
+- name: "Send config_inc.php file"
   template:
-    src: gmail_config.j2
-    dest: /tmp/gmail_config
+    src: config_inc.j2
+    dest: /tmp/config_inc.php
 
 - name: "Start temporary clean mantisbt service to copy files"
   docker_container:
@@ -21,7 +31,7 @@
     state: started
     volumes:
       - "{{ MANTIS_VOLUME }}:/mantis_files"
-      - "{{ MANTIS_LOGS }}:/mantis_logs
+      - "{{ MANTIS_LOGS }}:/mantis_logs"
 
 
 - name: "Start temporary clean maria service to copy files"
@@ -40,17 +50,16 @@
 
 - name: "Copy clean files to docker volumes"
   shell: |
-    docker exec tmp_wp bash -c "cp -a /var/www/html/. /mantis_files; \
+    docker exec tmp_mantis bash -c "cp -a /var/www/html/. /mantis_files; \
             chown www-data:www-data -R /mantis_files "
 
     docker exec tmp_db cp -a /var/lib/mysql/. /mariafiles
   retries: 3
 
-- name: "copy gmail configuration"
+- name: "copy configuration to container"
   shell: >
-    docker cp /tmp/gmail_config tmp_mantis/gmail_config;
+    docker cp /tmp/config_inc.php tmp_mantis:/mantis_files/config/config_inc.php;
     docker exec tmp_mantis bash -c "touch /mantis_logs/mantisbt.log; chmod 777 /mantis_logs/mantisbt.log";
-    docker exec tmp_mantis bash -c "cat /gmail_config >> /mantis_files/config/config_inc.php";
 
 - name: "Stop temporary services"
   docker_container:
