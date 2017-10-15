@@ -32,6 +32,7 @@ services:
     restart: always
 
   mysql:
+    network_mode: bridge
     image: mariadb:latest
     volumes:
       - {{ MANTIS_DB_VOLUME }}:/var/lib/mysql
@@ -47,6 +48,7 @@ services:
 {% if TOR_HH %}
   torhh:
     restart: always
+    network_mode: bridge
     image: goldy/tor-hidden-service
     links:
       - mantisbt
