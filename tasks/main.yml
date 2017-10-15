@@ -67,5 +67,11 @@
     state: absent
 
 - debug:
+    msg: |
+      Done setting up, to finish the installation point your bowse to
+      {{ mantis_domain_name }}/admin/install.php
+  tags: mantis_setup
+
+- debug:
     msg: The deed is done.
   tags: mantis_destroy

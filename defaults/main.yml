@@ -1,5 +1,5 @@
 alpine_image: alpine
-project_name: mantis_bugtracker
+project_name: mantis
 
 MANTIS_DB_VOLUME: "mantisdb"
 MANTIS_VOLUME: "mantisbt"
