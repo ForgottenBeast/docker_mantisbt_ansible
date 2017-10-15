@@ -15,6 +15,7 @@ services:
 
   mantisbt:
     image: vimagick/mantisbt:latest
+    network_mode: bridge
     volumes:
       - {{ MANTIS_VOLUME }}:/var/www/html
       - {{ MANTIS_LOGS }}:/var/log
