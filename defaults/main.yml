@@ -16,9 +16,6 @@ mantis_domain_name: tracker.mysite.xyz
 mantis_letsencrypt_mail: me@mydomain.com
 letsencrypt_testmode: 'true'
 
-#create tor hidden service for the tracker
-TOR_HH: False
-
 MANTIS_BACKUP_FILE: mantis_file.tar.bz2
 MANTIS_DB_BACKUP_FILE: mantis_db.tar.bz2
 
@@ -28,9 +25,6 @@ return_path_email: "return@mydomain.com"
 from_email: "from@mydomain.com"
 gmail_username: "whoisdis"
 gmail_password: "azerijazojqofjdiqo"
-
-#1024bit rsa key, if left empty one will be generated
-tor_hidden_service_private_key: None
 
 #if none precised, one will be generated
 master_salt: None

@@ -3,6 +3,12 @@
 {% endmacro %}
 
 version: "2"
+
+networks:
+  proxy_net:
+    external:
+      name: proxy_net
+
 volumes:
   {{ MANTIS_DB_VOLUME }}:
     external: True
@@ -15,7 +21,8 @@ services:
 
   mantisbt:
     image: vimagick/mantisbt:latest
-    network_mode: bridge
+    networks:
+      - proxy_net
     volumes:
       - {{ MANTIS_VOLUME }}:/var/www/html
       - {{ MANTIS_LOGS }}:/var/log
@@ -32,7 +39,8 @@ services:
     restart: always
 
   mysql:
-    network_mode: bridge
+    networks:
+      - proxy_net
     image: mariadb:latest
     volumes:
       - {{ MANTIS_DB_VOLUME }}:/var/lib/mysql
@@ -43,19 +51,3 @@ services:
       - MYSQL_USER={{DB_USER}}
       - MYSQL_PASSWORD={{DB_PASSWORD}}
     restart: always
-
-
-{% if TOR_HH %}
-  torhh:
-    restart: always
-    network_mode: bridge
-    image: goldy/tor-hidden-service
-    links:
-      - mantisbt
-    environment:
-      MANTISBT_KEY: |
-{{ wpkey(tor_hidden_service_private_key) | indent(8,True) }}
-        
-      MANTIS_BT_PORTS: {{MANTIS_EXT_PORT}}:80
-
-{% endif %}
